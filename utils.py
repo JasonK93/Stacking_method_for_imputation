@@ -1,6 +1,10 @@
 import matplotlib.pyplot as plt
+from sklearn import model_selection
 from sklearn.model_selection import KFold,GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
+import numpy as np
+seed = 520
+
 """
 * Divide the data set into 5 part
 * Expect:
@@ -45,6 +49,15 @@ def search_nestimator(X_train, y_train):
     plt.show()
 
 
+def get_result(model, indices, X, y):
+    pred = []
+    for i in range(5):
+        X_train, y_train, X_test, y_test = get_each_set(i, indices, X, y)
+        model.fit(X_train,y_train)
+        pred = pred + list(model.predict(X_test))
+    return pred
+
+
 """
 * Get the stack result from each models and combine the new train data
 * Expects:
@@ -53,10 +66,10 @@ def search_nestimator(X_train, y_train):
 * Return:
     -- stack_layer1 = 2D array, every column means one model learner
 """
-def stacking(models,X_train, y_train):
+def stacking(models,indices, X, y):
     results = []
     for model in models:
-        pred = get_result(model,X_train, y_train)   # TODO: write the get_results function
+        pred = get_result(model, indices, X, y)   # TODO: write the get_results function
         results.append(pred)
     n = len(results)
     if n == 1:
@@ -79,6 +92,11 @@ def RF_para_search(X_train, y_train):
         "max_depth": [5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
         "min_samples_leaf": [1, 2, 4, 6, 8, 10]}
 
+    # param_grid = {
+    #     "n_estimators": [9],
+    #     "max_depth": [5],
+    #     "min_samples_leaf": [1]}
+
     CV_rfc = GridSearchCV(estimator=rfc, param_grid=param_grid, cv=10)
     CV_rfc.fit(X_train, y_train)
     params = CV_rfc.best_params_
@@ -94,7 +112,6 @@ def train_RF(params, X_train, y_train):
 
     # fit the model with training set
     scores = model_selection.cross_val_score(rfc, X_train, y_train, cv=kfold, scoring='accuracy')
-    cv_scores.append(scores.mean() * 100)
     print("Train accuracy %0.2f (+/- %0.2f)" % (scores.mean() * 100, scores.std() * 100))
 
     # predict on testing set
@@ -105,7 +122,7 @@ def train_RF(params, X_train, y_train):
     return rfc
 
 
-def get_each_set(i, indices):
+def get_each_set(i, indices, X, y):
     X_train = X[indices[i][0]]
     y_train = y[indices[i][0]]
     X_test = X[indices[i][1]]
