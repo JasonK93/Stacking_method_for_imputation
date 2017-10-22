@@ -49,11 +49,10 @@ def search_nestimator(X_train, y_train):
     plt.show()
 
 
-def get_result(model, indices, X, y):
+def get_result(model, indices, X):
     pred = []
     for i in range(5):
-        X_train, y_train, X_test, y_test = get_each_set(i, indices, X, y)
-        model.fit(X_train,y_train)
+        X_test = X[indices[i][1]]
         pred = pred + list(model.predict(X_test))
     return pred
 
@@ -69,7 +68,7 @@ def get_result(model, indices, X, y):
 def stacking(models,indices, X, y):
     results = []
     for model in models:
-        pred = get_result(model, indices, X, y)   # TODO: write the get_results function
+        pred = get_result(model, indices, X)
         results.append(pred)
     n = len(results)
     if n == 1:
@@ -87,15 +86,15 @@ def stacking(models,indices, X, y):
 def RF_para_search(X_train, y_train):
     rfc = RandomForestClassifier(n_jobs=-1, oob_score=False, max_depth=30, max_features='sqrt', min_samples_leaf=1)
     # Use a grid over parameters of interest
-    param_grid = {
-        "n_estimators": [36, 45, 54, 63, 72],
-        "max_depth": [5, 10, 15, 20, 25, 30, 35, 40],
-        "min_samples_leaf": [1, 2, 4, 6, 8, 10]}
-
     # param_grid = {
-    #     "n_estimators": [9],
-    #     "max_depth": [5],
-    #     "min_samples_leaf": [1]}
+    #     "n_estimators": [36, 45, 54, 63, 72],
+    #     "max_depth": [5, 10, 15, 20, 25, 30, 35, 40],
+    #     "min_samples_leaf": [1, 2, 4, 6, 8, 10]}
+
+    param_grid = {
+        "n_estimators": [50, 100],
+        "max_depth": [5, 30],
+        "min_samples_leaf": [1, 5]}
 
     CV_rfc = GridSearchCV(estimator=rfc, param_grid=param_grid, cv=10)
     CV_rfc.fit(X_train, y_train)
