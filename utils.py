@@ -88,8 +88,8 @@ def RF_para_search(X_train, y_train):
     rfc = RandomForestClassifier(n_jobs=-1, oob_score=False, max_depth=30, max_features='sqrt', min_samples_leaf=1)
     # Use a grid over parameters of interest
     param_grid = {
-        "n_estimators": [9, 18, 27, 36, 45, 54, 63, 72, 81, 90, 99],
-        "max_depth": [5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+        "n_estimators": [36, 45, 54, 63, 72],
+        "max_depth": [5, 10, 15, 20, 25, 30, 35, 40],
         "min_samples_leaf": [1, 2, 4, 6, 8, 10]}
 
     # param_grid = {

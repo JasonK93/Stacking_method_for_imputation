@@ -12,7 +12,7 @@ logging.basicConfig(
 
 
 seed = 520
-
+xx
 # Load the data set which have 210000
 _, _, X, y = preprocess.get_dummy()
 X = np.array(X)  # [:10000]
