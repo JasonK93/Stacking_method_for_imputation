@@ -65,7 +65,7 @@ def get_result(model, indices, X):
 * Return:
     -- stack_layer1 = 2D array, every column means one model learner
 """
-def stacking(models,indices, X, y):
+def stacking(models,indices, X):
     results = []
     for model in models:
         pred = get_result(model, indices, X)
@@ -82,19 +82,37 @@ def stacking(models,indices, X, y):
         raise MyException("No model found")
     return stack_layer1
 
+def stacking_test(models,X):
+    results = []
+    for model in models:
+        pred = list(model.predict(X))
+        results.append(pred)
+    n = len(results)
+    if n == 1:
+        stack_layer1 = [[i] for i in results[0]]
+    elif n >1:
+        stack_layer1 = [[i] for i in results[0]]
+        for i in range(1,n):
+            tmp = [[j] for j in results[i]]
+            stack_layer1 = np.concatenate((stack_layer1,tmp), axis= 1)
+    else:
+        raise MyException("No model found")
+    return stack_layer1
+
+
 
 def RF_para_search(X_train, y_train):
     rfc = RandomForestClassifier(n_jobs=-1, oob_score=False, max_depth=30, max_features='sqrt', min_samples_leaf=1)
     # Use a grid over parameters of interest
-    # param_grid = {
-    #     "n_estimators": [36, 45, 54, 63, 72],
-    #     "max_depth": [5, 10, 15, 20, 25, 30, 35, 40],
-    #     "min_samples_leaf": [1, 2, 4, 6, 8, 10]}
-
     param_grid = {
-        "n_estimators": [50, 100],
-        "max_depth": [5, 30],
-        "min_samples_leaf": [1, 5]}
+        "n_estimators": [36, 45, 54, 63, 72],
+        "max_depth": [5, 10, 15, 20, 25, 30, 35, 40],
+        "min_samples_leaf": [1, 2, 4, 6, 8, 10]}
+
+    # param_grid = {
+    #     "n_estimators": [50],
+    #     "max_depth": [30],
+    #     "min_samples_leaf": [1]}
 
     CV_rfc = GridSearchCV(estimator=rfc, param_grid=param_grid, cv=10)
     CV_rfc.fit(X_train, y_train)
@@ -107,16 +125,7 @@ def train_RF(params, X_train, y_train):
     rfc = RandomForestClassifier(n_estimators=params['n_estimators'], max_depth=params['max_depth'],
                                  max_features='sqrt', min_samples_leaf=params['min_samples_leaf'])
 
-    kfold = KFold(n_splits=5, random_state=seed)
-
-    # fit the model with training set
-    scores = model_selection.cross_val_score(rfc, X_train, y_train, cv=kfold, scoring='accuracy')
-    print("Train accuracy %0.2f (+/- %0.2f)" % (scores.mean() * 100, scores.std() * 100))
-
-    # predict on testing set
-    # preds = model_selection.cross_val_predict(rfc, X_test,y_test,cv = kfold)
-    # cv_preds.append(metrics.accuracy_score(y_test, preds) * 100)
-    # print("Test accuracy %0.2f" % (100 * metrics.accuracy_score(y_test, preds)))
+    rfc.fit(X_train,y_train)
 
     return rfc
 

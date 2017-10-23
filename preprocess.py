@@ -19,7 +19,7 @@ logging.basicConfig(
 def get_data(save = 'no'):
 # Load data
     logging.info('Loading data ......')
-    data = pd.read_csv('data/origin_data.csv').iloc[:,1:]
+    data = pd.read_csv('data/train.csv').iloc[:,1:]
     label = data['RACE']
     del data['RACE']
     logging.info('Get data and label')
@@ -68,6 +68,8 @@ def get_dummy():
     X, y, _, _ = get_data('no')
     feature, label = clean_data(X,y)
     return feature,label,X, y
+
+
 if __name__ == '__main__':
     get_data('yes')
     # feature, label = clean_data(X,y)

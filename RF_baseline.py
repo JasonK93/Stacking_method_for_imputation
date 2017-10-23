@@ -94,54 +94,54 @@ def test_RandomForestClassifier(*data):
     roc_auc, fpr, tpr = compute_roc(y_test,clf.predict(X_test),6)
     save_plots(roc_auc, fpr, tpr, 6)
 
-
-
 if __name__ == '__main__':
-    X, _, _, y = preprocess.get_dummy()
+
+    print('Loading data ......')
+    X = pd.read_csv('data/train.csv').iloc[:,1:]
+    y = X['RACE']
+    del X['RACE']
+    del X['KEY']
+    X = np.array(X)
+    y = np.array(y).ravel()
     y = y - 1
-    print('finish loading .....')
-    X_train, X_test, y_train, y_test = train_test_split(X, y,train_size=0.75, test_size=0.25, random_state=seed)
 
-    test_RandomForestClassifier(X_train,X_test,y_train,y_test)
+    # X_train, X_test, y_train, y_test = train_test_split(X, y,train_size=0.75, test_size=0.25, random_state=seed)
 
-
-    """
-    macro:0.69
-    Traing Score:0.998933
-    Testing Score:0.868857
-    [[35698   799    70     3     0    64]
-     [ 2609  7176    67    11     0    47]
-     [  869   161  1478     1     0    28]
-     [  549   240    18   198     0    39]
-     [   52     9     4     1     0     0]
-     [  862   326    16    40     0  1065]]
-    [1 0 0 0 0 0] [1 0 0 0 0 0]
-    """
-
-
-
-    _, _, X, y = preprocess.get_dummy()
-    y = y - 1
-    print('finish loading .....')
+    X_test = pd.read_csv('data/ctest.csv').iloc[:,1:]
+    y_test = X_test['RACE']
+    del X_test['RACE']
+    del X_test['KEY']
+    X_test = np.array(X_test)
+    y_test = np.array(y_test).ravel()
+    y_test = y_test - 1
     X_train = X
     y_train = y
-    # X_train, X_test, y_train, y_test = train_test_split(X, y,train_size=0.75, test_size=0.25)
-    X_test = pd.read_csv('data/For test/X_test.csv')
-    del X_test['KEY']
-    y_test = pd.read_csv('data/For test/Y_test.csv')
-    y_test = y_test - 1
+    print('finish loading .....')
     test_RandomForestClassifier(X_train,X_test,y_train,y_test)
 
+    print('missing acc: ......')
+    index_data = np.isnan(np.array(pd.read_csv('data/test.csv')['RACE']))
+    test_RandomForestClassifier(X_train,X_test[index_data],y_train,y_test[index_data])
+    """
+    Traing Score:0.999989
+    Testing Score:0.846001
+    [[156645   3104    523     35      0    236]
+     [ 14194  27867   2664     88      0    254]
+     [  6172   2001  11628      2      0     72]
+     [  1288    357     39    279      0     59]
+     [   281     62     54      1      5      2]
+     [  3422   1348    212    121      0   4590]]
+    (array([1, 0, 0, 0, 0, 0]), array([1, 0, 0, 0, 0, 0]))
+    missing acc: ......
+    Traing Score:0.999992
+    Testing Score:0.837511
+    [[41162   823   196     5     0    64]
+     [ 3044  5344  1006    13     0    48]
+     [ 2118   819  4171     1     0    20]
+     [  292    45    10    24     0    15]
+     [  133    27    40     1     3     1]
+     [  858   351    83     9     0   952]]
+    (array([1, 0, 0, 0, 0, 0]), array([1, 0, 0, 0, 0, 0])
+    """
 
-    """
-    macro: 0.56
-    
-    Traing Score:0.999990
-    Testing Score:0.744678
-    [[62444  3647   320    24     0    53]
-     [ 9360  2386   868    27     0     5]
-     [ 3525   921  2075     0     0     4]
-     [  957    45   109    65     0    14]
-     [   51     4     7     0     0     0]
-     [ 2392   284   284    78     0    51]]
-    """
+    print('Starting grid_search....')
