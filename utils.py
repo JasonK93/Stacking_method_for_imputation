@@ -1,9 +1,45 @@
 import matplotlib.pyplot as plt
 from sklearn import model_selection
 from sklearn.model_selection import KFold,GridSearchCV
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier,AdaBoostClassifier
 import numpy as np
+import pandas as pd
 seed = 520
+
+"""
+* Get the total 6 data set we need
+* Expect:
+    None. Set the data path inside the function
+* Return:
+    -- A list: [X_train, y_train, X_test, y_test, X_miss, y_miss]
+        - X train, y_train： train data. - X_test, y_test: total test data - X_miss, y_miss: the data having miss data in text.csv
+    
+"""
+def get_data():
+    # Load the data set which have 210000
+    # print('Loading data ......')
+    X = pd.read_csv('data/train.csv').iloc[:, 1:]
+    y = X['RACE']
+    del X['RACE']
+    del X['KEY']
+    X = np.array(X)
+    y = np.array(y).ravel()
+    y = y - 1
+    # load test
+    X_test = pd.read_csv('data/ctest.csv').iloc[:, 1:]
+    y_test = X_test['RACE']
+    del X_test['RACE']
+    del X_test['KEY']
+    X_test = np.array(X_test)
+    y_test = np.array(y_test).ravel()
+    y_test = y_test - 1
+    X_train = X
+    y_train = y
+    index_data = np.isnan(np.array(pd.read_csv('data/test.csv')['RACE']))
+    X_miss = X_test[index_data]
+    y_miss = y_test[index_data]
+    # print('finish loading .....')
+    return [X_train, y_train, X_test, y_test, X_miss, y_miss, index_data]
 
 """
 * Divide the data set into 5 part
@@ -136,3 +172,22 @@ def get_each_set(i, indices, X, y):
     X_test = X[indices[i][1]]
     y_test = y[indices[i][1]]
     return X_train, y_train, X_test, y_test
+
+
+"""
+
+"""
+def Ada_para_search(X_train, y_train):
+    from sklearn.tree import DecisionTreeClassifier
+    ada_dtc = DecisionTreeClassifier()
+    ada = AdaBboostClassifier(base_estimator = ada_dtc)
+
+    param_grid = {"base_estimator__criterion": ["gini", "entropy"],
+                  "base_estimator__splitter": ["best", "random"],
+                  "n_estimators": [25, 50]}
+    CV_ada = GridSearchCV(estimator=ada,param_grid=param_grid,cv=10)
+    CV_ada.fit(X_train,Y_train)
+    params = CV_ada.best_params_
+    print('best para for this part:', params)
+    return params
+
