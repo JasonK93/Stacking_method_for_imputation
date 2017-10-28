@@ -153,7 +153,8 @@ def RF_para_search(X_train, y_train):
     CV_rfc = GridSearchCV(estimator=rfc, param_grid=param_grid, cv=10)
     CV_rfc.fit(X_train, y_train)
     params = CV_rfc.best_params_
-    print(params)
+    print('best para for this part:', params)
+    print('best score:', CV_rfc.best_score_)
     return params
 
 
@@ -175,19 +176,185 @@ def get_each_set(i, indices, X, y):
 
 
 """
-
+*
+*
+*
 """
+# Todo: ADD more base estimator
 def Ada_para_search(X_train, y_train):
     from sklearn.tree import DecisionTreeClassifier
     ada_dtc = DecisionTreeClassifier()
-    ada = AdaBboostClassifier(base_estimator = ada_dtc)
+    ada = AdaBoostClassifier(base_estimator = ada_dtc)
 
-    param_grid = {"base_estimator__criterion": ["gini", "entropy"],
-                  "base_estimator__splitter": ["best", "random"],
+    param_grid = {"learning_rate": [1,0.1,0.01],
                   "n_estimators": [25, 50]}
-    CV_ada = GridSearchCV(estimator=ada,param_grid=param_grid,cv=10)
-    CV_ada.fit(X_train,Y_train)
+    CV_ada = GridSearchCV(n_jobs=-1, estimator=ada,param_grid=param_grid,cv=10)
+    CV_ada.fit(X_train,y_train)
     params = CV_ada.best_params_
     print('best para for this part:', params)
+    print('best score:', CV_ada.best_score_)
     return params
 
+def train_ada(params, X_train, y_train):
+    from sklearn.tree import DecisionTreeClassifier
+    ada_dtc = DecisionTreeClassifier()
+    ada = AdaBoostClassifier(base_estimator=ada_dtc,learning_rate=params['learning_rate'], n_estimators=params['n_estimators'])
+    ada.fit(X_train,y_train)
+    return ada
+
+
+
+# Elastic
+def Elastic_para_search(X_train, y_train):
+    from sklearn.linear_model import ElasticNet
+    elastic =ElasticNet(alpha=1.0,l1_ratio=0.5)
+
+    param_grid = {"alpha": [0.1, 0.3, 0.5, 0.7, 0.9, 1.0],
+                  "l1_ratio": [0.3, 0.5, 0.8]}
+    CV_elastic = GridSearchCV(n_jobs=-1, estimator=elastic,param_grid=param_grid,cv=10)
+    CV_elastic.fit(X_train,y_train)
+    params = CV_elastic.best_params_
+    print('best para for this part:', params)
+    print('best score:', CV_elastic.best_score_)
+    return params
+
+
+def train_elastic(params, X_train, y_train):
+    from sklearn.linear_model import ElasticNet
+    elastic = ElasticNet(alpha=params['alpha'], l1_ratio=params['l1_ratio'])
+    elastic.fit(X_train,y_train)
+    return elastic
+
+
+# SGD
+def sgd_para_search(X_train, y_train):
+    from sklearn.linear_model import SGDClassifier
+    sgd = SGDClassifier(n_jobs=-1, loss='hinge', penalty='l2', alpha=0.0001, l1_ratio=0.15,
+                        n_iter=5, eta0=0.0, power_t=0.5)
+
+    # param_grid = {"alpha": [0.0001, 0.0003, 0.0005, 0.0007, 0.0009, 0.01],
+    #               "l1_ratio": [0.13, 0.15, 0.18],
+    #               "n_iter": [5, 100, 200, 500],
+    #               "penalty":['l1', 'l2', 'elasticnet']}
+    #
+    param_grid = {"alpha": [0.0001],
+                  "l1_ratio": [0.13],
+                  "n_iter": [500],
+                  "penalty":['elasticnet']}
+
+    CV_sgd = GridSearchCV(n_jobs=-1, estimator=sgd, param_grid=param_grid, cv=10)
+    CV_sgd.fit(X_train,y_train)
+    params = CV_sgd.best_params_
+    print('best para for this part:', params)
+    print('best score:', CV_sgd.best_score_)
+    return params
+
+
+def train_sgd(params, X_train, y_train):
+    from sklearn.linear_model import SGDClassifier
+    sgd = SGDClassifier(n_jobs=-1, loss='hinge', penalty=params['penalty'], alpha=params["alpha"], l1_ratio=params["l1_ratio"],
+                        n_iter=params["n_iter"], eta0=0.0, power_t=0.5)
+
+    sgd.fit(X_train,y_train)
+    return sgd
+
+
+# KNN
+def knn_para_search(X_train, y_train):
+    from sklearn import  neighbors
+    knn = neighbors.KNeighborsClassifier(neighbors= 6,weights='uniform', algorithm='auto',
+                                         leaf_size=30, p =2, metric='minkowski', n_jobs=-1)
+
+
+    param_grid = {"leaf_size": [10,20,30,40,50],
+                  "p": [1, 2, 3, 4],
+                  "weights": ['uniform', 'distance'],
+                  "algorithm":['auto', 'ball_tree', 'kd_tree', 'brute']}
+    CV_knn = GridSearchCV(n_jobs=-1, estimator=knn, param_grid=param_grid, cv=10)
+    CV_knn.fit(X_train,y_train)
+    params = CV_knn.best_params_
+    print('best para for this part:', params)
+    print('best score:', CV_knn.best_score_)
+    return params
+
+
+def train_knn(params, X_train, y_train):
+    from sklearn import  neighbors
+    knn = neighbors.KNeighborsClassifier(neighbors= 6,weights=params['weights'], algorithm=params['algorithm'],
+                                         leaf_size=params['leaf_size'], p =params['p'], metric='minkowski', n_jobs=-1)
+
+    knn.fit(X_train,y_train)
+    return knn
+
+
+# GPC
+def gpc_para_search(X_train, y_train):
+    from sklearn.gaussian_process import GaussianProcessClassifier
+
+    gpc = GaussianProcessClassifier(kernel=None, optimizer='fmin_l_bfgs_b', n_restarts_optimizer=0,max_iter_predict=100,n_jobs=-1)
+
+    param_grid = {"n_restarts_optimizer": [0, 5, 10],
+                  "max_iter_predict": [100, 200, 500]}
+    CV_gpc = GridSearchCV(n_jobs=-1, estimator=gpc, param_grid=param_grid, cv=10)
+    CV_gpc.fit(X_train,y_train)
+    params = CV_gpc.best_params_
+    print('best para for this part:', params)
+    print('best score:', CV_gpc.best_score_)
+    return params
+
+
+def train_gpc(params, X_train, y_train):
+    from sklearn.gaussian_process import GaussianProcessClassifier
+
+    gpc = GaussianProcessClassifier(kernel=None, optimizer='fmin_l_bfgs_b', n_restarts_optimizer=params['n_restarts_optimizer'],max_iter_predict=params['max_iter_predict'],n_jobs=-1)
+
+    gpc.fit(X_train,y_train)
+    return gpc
+
+
+# MNB
+def mnb_para_search(X_train, y_train):
+    from sklearn.naive_bayes import MultinomialNB
+    mnb = MultinomialNB(alpha=1.0,class_prior=[6,5,4,3,2,1])
+
+    param_grid = {"alpha": [0, 0.5, 1.0]}
+    CV_mnb = GridSearchCV(n_jobs=-1, estimator=mnb, param_grid=param_grid, cv=10)
+    CV_mnb.fit(X_train, y_train)
+    params = CV_mnb.best_params_
+    print('best para for this part:', params)
+    print('best score:', CV_mnb.best_score_)
+    return params
+
+
+def train_mnb(params, X_train, y_train):
+    from sklearn.naive_bayes import MultinomialNB
+    mnb = MultinomialNB(alpha=params['alpha'],class_prior=[6,5,4,3,2,1])
+
+    mnb.fit(X_train,y_train)
+    return mnb
+
+
+# MLP
+def mlp_para_search(X_train, y_train):
+    from sklearn.neural_network import MLPClassifier
+    mlp = MLPClassifier(hidden_layer_sizes=(100,100,50,),activation='relu', solver='adam',
+                        alpha=0.0001, batch_size='auto', learning_rate="constant", learning_rate_init=0.001,
+                        max_iter=5000, momentum=0.9, validation_fraction=0.1,shuffle=True)
+
+    param_grid = {"learning_rate_init": [0.0001, 0.001, 0.01, 0.1, 1]}
+    CV_mlp = GridSearchCV(n_jobs=-1, estimator=mlp, param_grid=param_grid, cv=10)
+    CV_mlp.fit(X_train, y_train)
+    params = CV_mlp.best_params_
+    print('best para for this part:', params)
+    print('best score:', CV_mlp.best_score_)
+    return params
+
+
+def train_mlp(params, X_train, y_train):
+    from sklearn.neural_network import MLPClassifier
+    mlp = MLPClassifier(hidden_layer_sizes=(100, 100, 50,), activation='relu', solver='adam',
+                        alpha=0.0001, batch_size='auto', learning_rate="constant", learning_rate_init=params['learning_rate_init'],
+                        max_iter=5000, momentum=0.9, validation_fraction=0.1, shuffle=True)
+
+    mlp.fit(X_train,y_train)
+    return mlp

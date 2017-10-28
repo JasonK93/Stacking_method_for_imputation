@@ -46,7 +46,7 @@ X_train, y_train, X_test, y_test, X_miss, y_miss, index_data = utils.get_data()
 indices = utils.get_kfold_indices(X_train)
 if not os.path.exists('cache/rf.pkl'):
     if not os.path.exists('cache'):
-        os.mkdir('cache')
+        os.mkdir('cache')clf =
         logging.info('make cache dir ......')
     print('get models ......')
     # get the 5 fold to get the 5 models
@@ -54,9 +54,9 @@ if not os.path.exists('cache/rf.pkl'):
     models = []
     for i in range(5):
         logging.info('Grid search for the {} validation ......'.format(i))
-        X_train, y_train, _, _ = utils.get_each_set(i, indices, X, y)
-        params = utils.RF_para_search(X_train, y_train)
-        RF_model1 = utils.train_RF(params, X_train, y_train)
+        X_cvtrain, y_cvtrain, _, _ = utils.get_each_set(i, indices, X_train, y_train)
+        params = utils.RF_para_search(X_cvtrain, y_cvtrain)
+        RF_model1 = utils.train_RF(params, X_cvtrain, y_cvtrain)
         models.append(RF_model1)
     models_pkl = open('cache/rf.pkl', 'wb')
     # Pickle dictionary using protocol 0.
