@@ -266,17 +266,16 @@ def cal():
     rf_result = rf_train(X_train, y_train, indices)
     stacking_layer1 = np.concatenate([ada_result, elastic_result, sgd_result, knn_result, gpc_result,
                                       mnb_result, mlp_result, rf_result],axis=1)
+    from sklearn.ensemble import RandomForestClassifier
+    clf = RandomForestClassifier()
+    clf.fit(stacking_layer1,y_train)
+    print("Traing Score:%f" % clf.score(X_train, y_train))
+    print("Testing Score:%f" % clf.score(X_test, y_test))
+    print(confusion_matrix(y_test, clf.predict(X_test)))
+    roc_auc, fpr, tpr = RF_baseline.compute_roc(y_test, clf.predict(X_test), 6)
+    RF_baseline.save_plots(roc_auc, fpr, tpr, 6)
 
 
 
 if __name__ == '__main__':
-    X_train, y_train, X_test, y_test, X_miss, y_miss, index_data, indices = first_step()
-    ada_result = ada_train(X_train, y_train, indices) # shape (379171, 5)
-    elastic_result = elastic_train(X_train, y_train, indices)
-    sgd_result = sgd_train(X_train, y_train, indices)
-    knn_result = knn_train(X_train, y_train, indices)
-    gpc_result = gpc_train(X_train, y_train, indices)
-    mnb_result = mnb_train(X_train, y_train, indices)
-    mlp_result = mlp_train(X_train, y_train, indices)
-    rf_result = rf_train(X_train, y_train, indices)
-
+    cal()

@@ -232,15 +232,15 @@ def sgd_para_search(X_train, y_train):
     sgd = SGDClassifier(n_jobs=-1, loss='hinge', penalty='l2', alpha=0.0001, l1_ratio=0.15,
                         n_iter=5, eta0=0.0, power_t=0.5)
 
-    # param_grid = {"alpha": [0.0001, 0.0003, 0.0005, 0.0007, 0.0009, 0.01],
-    #               "l1_ratio": [0.13, 0.15, 0.18],
-    #               "n_iter": [5, 100, 200, 500],
-    #               "penalty":['l1', 'l2', 'elasticnet']}
-    #
-    param_grid = {"alpha": [0.0001],
-                  "l1_ratio": [0.13],
-                  "n_iter": [500],
-                  "penalty":['elasticnet']}
+    param_grid = {"alpha": [0.0001, 0.0003, 0.0005, 0.0007, 0.0009, 0.01],
+                  "l1_ratio": [0.13, 0.15, 0.18],
+                  "n_iter": [5, 100, 200, 500],
+                  "penalty":['l1', 'l2', 'elasticnet']}
+
+    # param_grid = {"alpha": [0.0001],
+    #               "l1_ratio": [0.13],
+    #               "n_iter": [500],
+    #               "penalty":['elasticnet']}
 
     CV_sgd = GridSearchCV(n_jobs=-1, estimator=sgd, param_grid=param_grid, cv=10)
     CV_sgd.fit(X_train,y_train)
@@ -262,7 +262,7 @@ def train_sgd(params, X_train, y_train):
 # KNN
 def knn_para_search(X_train, y_train):
     from sklearn import  neighbors
-    knn = neighbors.KNeighborsClassifier(neighbors= 6,weights='uniform', algorithm='auto',
+    knn = neighbors.KNeighborsClassifier(n_neighbors= 6,weights='uniform', algorithm='auto',
                                          leaf_size=30, p =2, metric='minkowski', n_jobs=-1)
 
 
@@ -270,6 +270,11 @@ def knn_para_search(X_train, y_train):
                   "p": [1, 2, 3, 4],
                   "weights": ['uniform', 'distance'],
                   "algorithm":['auto', 'ball_tree', 'kd_tree', 'brute']}
+
+    # param_grid = {"leaf_size": [50],
+    #               "p": [1],
+    #               "weights": ['uniform'],
+    #               "algorithm":['auto']}
     CV_knn = GridSearchCV(n_jobs=-1, estimator=knn, param_grid=param_grid, cv=10)
     CV_knn.fit(X_train,y_train)
     params = CV_knn.best_params_
@@ -280,7 +285,7 @@ def knn_para_search(X_train, y_train):
 
 def train_knn(params, X_train, y_train):
     from sklearn import  neighbors
-    knn = neighbors.KNeighborsClassifier(neighbors= 6,weights=params['weights'], algorithm=params['algorithm'],
+    knn = neighbors.KNeighborsClassifier(n_neighbors= 6,weights=params['weights'], algorithm=params['algorithm'],
                                          leaf_size=params['leaf_size'], p =params['p'], metric='minkowski', n_jobs=-1)
 
     knn.fit(X_train,y_train)
@@ -342,6 +347,7 @@ def mlp_para_search(X_train, y_train):
                         max_iter=5000, momentum=0.9, validation_fraction=0.1,shuffle=True)
 
     param_grid = {"learning_rate_init": [0.0001, 0.001, 0.01, 0.1, 1]}
+    # param_grid = {"learning_rate_init": [ 0.001]}
     CV_mlp = GridSearchCV(n_jobs=-1, estimator=mlp, param_grid=param_grid, cv=10)
     CV_mlp.fit(X_train, y_train)
     params = CV_mlp.best_params_
