@@ -295,12 +295,13 @@ def train_knn(params, X_train, y_train):
 # GPC
 def gpc_para_search(X_train, y_train):
     from sklearn.gaussian_process import GaussianProcessClassifier
-
-    gpc = GaussianProcessClassifier(kernel=None, optimizer='fmin_l_bfgs_b', n_restarts_optimizer=0,max_iter_predict=100,n_jobs=-1)
-
+    from sklearn.gaussian_process.kernels import  RBF
+    kernel_ = RBF(length_scale=1.0, length_scale_bounds=(1e-5,1e5))
+    gpc = GaussianProcessClassifier(kernel=kernel_, optimizer='fmin_l_bfgs_b', n_restarts_optimizer=0, max_iter_predict=100)
+    GaussianProcessClassifier()
     param_grid = {"n_restarts_optimizer": [0, 5, 10],
                   "max_iter_predict": [100, 200, 500]}
-    CV_gpc = GridSearchCV(n_jobs=-1, estimator=gpc, param_grid=param_grid, cv=10)
+    CV_gpc = GridSearchCV(estimator=gpc, param_grid=param_grid, cv=10)
     CV_gpc.fit(X_train,y_train)
     params = CV_gpc.best_params_
     print('best para for this part:', params)
