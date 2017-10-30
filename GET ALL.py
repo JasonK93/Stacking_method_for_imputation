@@ -5,6 +5,7 @@ import pickle
 import logging
 import numpy as np
 import RF_baseline
+from sklearn.metrics import confusion_matrix
 logging.basicConfig(
     format='%(asctime)s :%(levelname)s : %(message)s',
     level=logging.INFO
@@ -265,8 +266,8 @@ def cal():
     mnb_result = mnb_train(X_train, y_train, indices)
     mlp_result = mlp_train(X_train, y_train, indices)
     rf_result = rf_train(X_train, y_train, indices)
-    stacking_layer1 = np.concatenate([ada_result, elastic_result, sgd_result,
-                                      mnb_result, mlp_result, rf_result],axis=1)
+    stacking_layer1 = np.concatenate([ada_result, elastic_result,
+                                      rf_result],axis=1)
     from sklearn.ensemble import RandomForestClassifier
     clf = RandomForestClassifier()
     clf.fit(stacking_layer1[0:250000],y_train[0:250000])
@@ -281,13 +282,19 @@ def cal():
 if __name__ == '__main__':
     X_train, y_train, X_test, y_test, X_miss, y_miss, index_data, indices = first_step()
     ada_result = ada_train(X_train, y_train, indices) # shape (379171, 5)
+    print('ada:',confusion_matrix(y_train,ada_result[:,0]))
     elastic_result = elastic_train(X_train, y_train, indices)
+    print(elastic_result[:,0])
+    # print('ela:', confusion_matrix(y_train,elastic_result[:,0]))
     sgd_result = sgd_train(X_train, y_train, indices)
+    print('sgd:', confusion_matrix(y_train, sgd_result[:,0]))
     # knn_result = knn_train(X_train, y_train, indices)
     # gpc_result = gpc_train(X_train, y_train, indices)
     # mnb_result = mnb_train(X_train, y_train, indices)
     mlp_result = mlp_train(X_train, y_train, indices)
+    print('mlp:', confusion_matrix(y_train,mlp_result[:,0]))
     rf_result = rf_train(X_train, y_train, indices)
+    print('rf:', confusion_matrix(y_train,rf_result[:,0]))
     stacking_layer1 = np.concatenate([ada_result, elastic_result, sgd_result,
                                       mlp_result, rf_result],axis=1)
     from sklearn.ensemble import RandomForestClassifier
@@ -295,6 +302,21 @@ if __name__ == '__main__':
     clf.fit(stacking_layer1[0:250000],y_train[0:250000])
     print("Traing Score:%f" % clf.score(stacking_layer1[0:250000], y_train[0:250000]))
     print("Testing Score:%f" % clf.score(stacking_layer1[250000:], y_train[250000:]))
+    print(confusion_matrix(y_train[250000:], clf.predict(stacking_layer1[250000:])))
+    roc_auc, fpr, tpr = RF_baseline.compute_roc(y_train[250000:], clf.predict(stacking_layer1[250000:]), 6)
+    RF_baseline.save_plots(roc_auc, fpr, tpr, 6)
+
+    clf.fit(X_train[0:250000], y_train[0:250000])
+    print("Traing Score:%f" % clf.score(X_train[0:250000], y_train[0:250000]))
+    print("Testing Score:%f" % clf.score(X_train[250000:], y_train[250000:]))
     print(confusion_matrix(y_train[250000:], clf.predict(X_train[250000:])))
     roc_auc, fpr, tpr = RF_baseline.compute_roc(y_train[250000:], clf.predict(X_train[250000:]), 6)
+    RF_baseline.save_plots(roc_auc, fpr, tpr, 6)
+
+    tmp = np.concatenate((stacking_layer1,X_train),axis=1)
+    clf.fit(tmp[0:250000], y_train[0:250000])
+    print("Traing Score:%f" % clf.score(tmp[0:250000], y_train[0:250000]))
+    print("Testing Score:%f" % clf.score(tmp[250000:], y_train[250000:]))
+    print(confusion_matrix(y_train[250000:], clf.predict(tmp[250000:])))
+    roc_auc, fpr, tpr = RF_baseline.compute_roc(y_train[250000:], clf.predict(tmp[250000:]), 6)
     RF_baseline.save_plots(roc_auc, fpr, tpr, 6)

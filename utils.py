@@ -6,15 +6,7 @@ import numpy as np
 import pandas as pd
 seed = 520
 
-"""
-* Get the total 6 data set we need
-* Expect:
-    None. Set the data path inside the function
-* Return:
-    -- A list: [X_train, y_train, X_test, y_test, X_miss, y_miss]
-        - X train, y_train： train data. - X_test, y_test: total test data - X_miss, y_miss: the data having miss data in text.csv
-    
-"""
+
 def get_data():
     # Load the data set which have 210000
     # print('Loading data ......')
@@ -345,10 +337,10 @@ def mlp_para_search(X_train, y_train):
     from sklearn.neural_network import MLPClassifier
     mlp = MLPClassifier(hidden_layer_sizes=(100,100,50,),activation='relu', solver='adam',
                         alpha=0.0001, batch_size='auto', learning_rate="constant", learning_rate_init=0.001,
-                        max_iter=5000, momentum=0.9, validation_fraction=0.1,shuffle=True)
+                        max_iter=10000, momentum=0.9, validation_fraction=0.1,shuffle=True)
 
-    param_grid = {"learning_rate_init": [0.0001, 0.001, 0.01, 0.1, 1]}
-    # param_grid = {"learning_rate_init": [ 0.001]}
+    # param_grid = {"learning_rate_init": [0.0001, 0.001, 0.01, 0.1, 1]}
+    param_grid = {"learning_rate_init": [ 0.1]}
     CV_mlp = GridSearchCV(n_jobs=-1, estimator=mlp, param_grid=param_grid, cv=10)
     CV_mlp.fit(X_train, y_train)
     params = CV_mlp.best_params_
