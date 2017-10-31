@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics import confusion_matrix
 X_train, y_train, X_test, y_test, X_miss, y_miss, index_data = utils.get_data()
-
+print(index_data)
 y_train = np.array(pd.get_dummies(pd.DataFrame(y_train).iloc[:, 0]))
 y_test = np.array(pd.get_dummies(pd.DataFrame(y_test).iloc[:, 0]))
 y_miss = np.array(pd.get_dummies(pd.DataFrame(y_miss).iloc[:, 0]))
@@ -35,6 +35,7 @@ def basicNN():
     # l5 = add_layer(l4, 128, 64, activation_function=tf.nn.relu)
     prediction = add_layer(l2, 64, 6, activation_function=tf.nn.relu)
     prediction_ = tf.nn.softmax(prediction)
+    print(prediction_)
     # loss function
     correct_pred = tf.equal(tf.argmax(prediction, 1), tf.argmax(ys, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
@@ -57,6 +58,16 @@ def basicNN():
             print('cost:', sess.run(cost, feed_dict={xs: X_train, ys: y_train}))
             a = np.array(pd.DataFrame(y_train).idxmax(axis=1))
             b = np.array(pd.DataFrame(sess.run(prediction_, feed_dict={xs: X_train, ys: y_train})).idxmax(axis=1))
+            #
+            miss_b = np.array(pd.DataFrame(sess.run(prediction_, feed_dict={xs: X_test, ys: y_test})).idxmax(axis=1))
+            miss_b = miss_b.reshape([237605,1])
+            print(miss_b.shape, X_test.shape)
+
+            want = np.concatenate((X_test, np.array(pd.DataFrame(y_test).idxmax(axis=1).reshape([237605,1]))), axis=1)
+            print(want.shape)
+            want[index_data, 56] = miss_b[index_data,0]
+            print(want.shape)
+            pd.DataFrame(want).to_csv('want.csv')
         if i % 100 == 0:
             print(confusion_matrix(a, b))
 basicNN()
