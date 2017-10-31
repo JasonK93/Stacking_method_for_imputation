@@ -67,7 +67,7 @@ def basicNN():
             print(want.shape)
             want[index_data, 56] = miss_b[index_data,0]
             print(want.shape)
-            pd.DataFrame(want).to_csv('want.csv')
+            pd.DataFrame(want).to_csv('want.csv',index=False)
         if i % 100 == 0:
             print(confusion_matrix(a, b))
 basicNN()
